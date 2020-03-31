@@ -1,37 +1,27 @@
-const mysql = require('mysql');
-const {dbConfig} = require('../dbConfig');
-const {resolvePath} = require('../utils/path');
-const {resolveDBObj} = require('../utils/resolveDBObj');
-
-const conc = mysql.createConnection(dbConfig);
-conc.connect();
-
-// service logic
-const getSucculentList = (callback) => {
-  const sql = 'SELECT * FROM DHJ_IMG';
-  conc.query(sql, callback);
-};
-
-const getSucculentTagList = (callback) => {
-  const sql = 'SELECT distinct(DHJ_TAG) FROM DHJ_IMG';
-  conc.query(sql, callback);
-};
+const { resolveDBObj } = require('../utils/resolveDBObj');
+const { convertArrToCluster } = require('../utils/convertArrToCluster');
+const {
+  getSucculentList,
+  getSucculentTagList,
+  getSucculentListByTag
+} = require('./succulentServiceLogic');
 
 // Dependency Injection
-const registGetSucculentList = (app) => {
-  const url = resolvePath('succulent');
-  app.get(url, (req, res) => {
+const registGetSucculentList = (apiRoutes) => {
+  const url = '/succulent';
+  apiRoutes.get(url, (req, res) => {
     const callback = (err, rows) => {
-      const result = rows.map(row => resolveDBObj(row));
-      res.send(result);
+      const result = rows ? rows.map(row => resolveDBObj(row)) : [];
+      const cluster = convertArrToCluster(result);
+      res.send(cluster);
     }
     getSucculentList(callback);
   });
 };
 
-const registGetTagList = (app) => {
-  const url = resolvePath('succulent/tags');
-  app.get(url, (req, res) => {
+const registGetTagList = (apiRoutes) => {
+  const url = '/succulent/tags';
+  apiRoutes.get(url, (req, res) => {
     const callback = (err, rows) => {
       const result = rows.map(row => resolveDBObj(row)).map(row => row.tag);
       res.send(result);
@@ -40,13 +30,25 @@ const registGetTagList = (app) => {
   });
 };
 
+const registGetSucculentListByTag = (apiRoutes) => {
+  const url = '/succulent/byTag';
+  apiRoutes.get(url, (req, res) => {
+    const callback = (err, rows) => {
+      const result = rows ? rows.map(row => resolveDBObj(row)) : [];
+      const cluster = convertArrToCluster(result);
+      res.send(cluster);
+    }
+    const { tag } = req.query;
+    getSucculentListByTag(tag, callback);
+  });
+};
+
 // interface
-const registSucculentService = (app) => {
-  registGetSucculentList(app);
-  registGetTagList(app);
+const registSucculentService = (apiRoutes) => {
+  registGetSucculentList(apiRoutes);
+  registGetTagList(apiRoutes);
+  registGetSucculentListByTag(apiRoutes);
   console.log('registSucculentService successfully!');
 };
 
-module.exports = {
-  registSucculentService
-};
+module.exports = registSucculentService;

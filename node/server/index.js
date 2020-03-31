@@ -1,22 +1,27 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const {setContext} = require('./utils/path');
-const {registSucculentService} = require('./services/succulentService');
+const apiRoutes = express.Router();
+const registSucculentService = require('./services/succulentService');
+const handleProduction = require('./utils/handleProduction');
 
 // set server context first
 const context = '/api';
-setContext(context);
 
 // set static resource
-app.use(express.static(path.resolve(__dirname, './public')));
+app.use(express.static(path.resolve(__dirname, 'public')));
+handleProduction(app, express, path);
 
-const HOST = 'localhost';
-const PORT = '3001';
+// regist services on express.Router()
+registSucculentService(apiRoutes);
+// make sure regist services before 'app.use(context, apiRoutes)'
+app.use(context, apiRoutes);
 
-app.listen(PORT, HOST, () => {
+const args = process.argv.slice(2);
+const port = args[0];
+
+const PORT = port | '3001';
+
+app.listen(PORT, () => {
   console.log(`server is runnig on port: ${PORT}`);
 });
-
-// regist servies at the end
-registSucculentService(app);

@@ -3,21 +3,27 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import * as SucculentAction from '../../actions/succulentAction'
-import { Container, Card, CardContent, CardActions, Typography, Button,
-   Box, GridList, GridListTile, GridListTileBar, IconButton } from '@material-ui/core';
+import { Container, Box } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 import ImgDialog from '../../components/common/ImgDialog';
 import SucculentBlock from '../../components/home/SucculentBlock';
 
+const isDevEnvironment = process.env.NODE_ENV === 'development';
+
 const useStyles = (theme) => {
-  console.log('theme :', theme);
+  if (isDevEnvironment) {
+    console.log('theme :', theme);
+  }
   return {
     homeView: {
       paddingTop: 64,
+      boxSizing: 'border-box',
+      minHeight: 'calc(100vh - 200px)' // 200px is footer's height
     },
     container: {
       marginTop: theme.spacing(3),
+      marginBottom: theme.spacing(3),
     },
     imgBlockWrapper: {
       position: 'relative',

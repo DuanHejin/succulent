@@ -1,14 +1,18 @@
 import React, { Component } from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 import {
   AppBar,
   Toolbar,
-  IconButton,
+  // IconButton,
   Typography,
-  InputBase
+  InputBase,
 } from '@material-ui/core';
-import MenuIcon from '@material-ui/icons/Menu';
+// import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import { fade, withStyles } from '@material-ui/core/styles';
+import keycode from 'keycode';
+import * as SucculentAction from '../../actions/succulentAction'
 
 const useStyles = theme => ({
   root: {
@@ -66,15 +70,23 @@ const useStyles = theme => ({
 
 class NavView extends Component {
 
+  onSearchKeyUp = (event) => {
+    if (event.keyCode === keycode('enter')) {
+      const { succulentAction } = this.props;
+      const searchTerm = event.target.value;
+      succulentAction.getSucculentsByTag(searchTerm);
+    }
+  }
+
   render() {
     const { classes } = this.props;
     return (
       <div className='navView'>
         <AppBar>
           <Toolbar>
-            <IconButton edge="start" className={classes.menuButton} color="inherit">
+            {/* <IconButton edge="start" className={classes.menuButton} color="inherit">
               <MenuIcon />
-            </IconButton>
+            </IconButton> */}
             <Typography className={classes.title} variant="h6" noWrap>
               多肉日记
             </Typography>
@@ -82,10 +94,12 @@ class NavView extends Component {
               <div className={classes.searchIcon}>
                 <SearchIcon />
               </div>
-              <InputBase placeholder="Search…" classes={{
+              <InputBase placeholder="搜索..."
+                classes={{
                   root: classes.inputRoot,
                   input: classes.inputInput,
-                }} inputProps={{ 'aria-label': 'search' }} />
+                }}
+                onKeyUp={this.onSearchKeyUp} />
             </div>
           </Toolbar>
         </AppBar>
@@ -94,4 +108,12 @@ class NavView extends Component {
   }
 }
 
-export default withStyles(useStyles)(NavView);
+function mapDispatchToProps(dispatch) {
+  return {
+    succulentAction: bindActionCreators(SucculentAction, dispatch)
+  }
+}
+
+export default connect(
+  null, mapDispatchToProps
+)(withStyles(useStyles)(NavView));
